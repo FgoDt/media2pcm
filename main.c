@@ -143,10 +143,9 @@ int decode(Data *data)
 	uint64_t out_channel_layout = av_get_default_channel_layout(data->channels);
 
 	int out_frame_size = pCodecCtx->frame_size;
-	int out_buffer_size = av_samples_get_buffer_size(NULL,
-	data->channels,out_frame_size,out_fmt,1);
+	int out_buffer_size = 4096; 
 
-	uint8_t *out_buf = (uint8_t*)av_malloc(out_buffer_size*2);
+	uint8_t *out_buf = (uint8_t*)av_malloc(out_buffer_size*4);
 
 	AVFrame *pFrame;
 	pFrame = avcodec_alloc_frame();
@@ -164,6 +163,7 @@ int decode(Data *data)
 
 	int get_audio=0;
 	int ret = 0;
+	int resample_out_buffer_size =0;
 	while(av_read_frame(pFormatCtx, packet)>=0)
 	{
 		if(packet->stream_index == audiostream)
@@ -175,9 +175,10 @@ int decode(Data *data)
 			}
 
 			if(get_audio>0){
-				swr_convert(au_convert_ctx,&out_buf,out_buffer_size,
+				ret = swr_convert(au_convert_ctx,&out_buf,out_buffer_size,
 					(const uint8_t**)pFrame->data,pFrame->nb_samples);
-				fwrite(out_buf,1,out_buffer_size,pFile);
+				resample_out_buffer_size = av_samples_get_buffer_size(NULL,data->channels,ret,out_fmt,1);
+				fwrite(out_buf,1,resample_out_buffer_size,pFile);
 			}
 		}
 		av_free_packet(packet);

@@ -1,3 +1,5 @@
 .vscode/
 audio2pcm
+media2pcm
 *.o
+*.pcm

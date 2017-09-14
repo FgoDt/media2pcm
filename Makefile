@@ -5,4 +5,4 @@ main.o:main.c
 	gcc -g -c main.c -o main.o
 
 clean:
-	rm audio2pcm
+	rm media2pcm
